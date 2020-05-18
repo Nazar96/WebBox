@@ -1,6 +1,6 @@
- from setuptools import setup
+from setuptools import setup
 
- setup(
+setup(
    name='webbox',
    version='0.1.0',
    author='Nazarii Tekhta',
