@@ -22,7 +22,7 @@ tags = ['p', 'h1', 'h2', 'h3', 'tr', 'th',]
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
-options.add_argument("window-size=1400,1400")
+options.add_argument("window-size=1400,700")
 
 def create_bbox(img_base, img_aug, thresh = 130,ksize=(5,5)):
     diff = (img_aug - img_base)
