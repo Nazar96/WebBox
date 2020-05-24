@@ -9,20 +9,35 @@ from skimage.metrics import structural_similarity
 import cv2
 import selenium
 from selenium import webdriver
+from selenium.common.exceptions import StaleElementReferenceException, JavascriptException
 from itertools import chain
 
 from tqdm.autonotebook import tqdm
 import os
+import contextlib
 
 from shapely.geometry import MultiPolygon, Polygon
 import json
 
 
-tags = ['p', 'h1', 'h2', 'h3', 'tr', 'th',]
+#tags = ['p', 'h1', 'h2', 'h3', 'tr', 'th', 'li', 'a']
+tags = ['div', 'a', 'h1', 'h2', 'h3', 'tr', 'th', 'span', 'label', 'li', 'button']
+# tags = ['body']
+
+# .text
+#     {
+#         font-family: Garamond, serif;
+#         font-size: 12px;
+#         color: rgba(0, 0, 0, 0.5);
+#     }
+
+
+#options = Options()
+#options.headless = True
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
-options.add_argument("window-size=1400,700")
+options.add_argument("window-size=1400,1400")
 
 def create_bbox(img_base, img_aug, thresh = 130,ksize=(5,5)):
     diff = (img_aug - img_base)
@@ -58,48 +73,55 @@ class WebBoxGenerator():
         self.tags = tags
         self.links = links
         self.sleep_time = sleep_time
-        
-        self.driver_base = webdriver.Chrome(options=options)
-        self.driver_aug = webdriver.Chrome(options=options)
+       
     
-    def __del__(self):
-        self.driver_base.quit()
-        self.driver_aug.quit()
-    
-    def generate_dataset(self):
+    def generate_dataset(self, thresh=130, ksize=(5,5)):
         tmp_dir = tempfile.TemporaryDirectory()
         aug_path = os.path.join(tmp_dir.name, 'tmp.png')
         
-        for url in tqdm(self.links):
-            name = str(uuid.uuid4())
-            img_path = os.path.join(self.screenshot_path, name+'.png')
-            annot_path = os.path.join(self.annotation_path, name+'.json')
+        driver = webdriver.Chrome(options=options)
+       
+        try:
+            for url in tqdm(self.links):
+                name = str(uuid.uuid4())
+                img_path = os.path.join(self.screenshot_path, name+'.png')
+                annot_path = os.path.join(self.annotation_path, name+'.json')
 
-            self.driver_base.get(url)
-            self.driver_aug.get(url)
-            
-            sleep(self.sleep_time)
+                driver.get(url)
+
+                sleep(self.sleep_time)
                 
-            for tag in self.tags:
-                for element in self.driver_aug.find_elements_by_tag_name(tag):
-                    self.driver_aug.execute_script(f"arguments[0].style.opacity = 0.1", element)
+                try:
 
-            self.driver_base.save_screenshot(img_path)
-            self.driver_aug.save_screenshot(aug_path)
+                    driver.save_screenshot(img_path)
 
-            img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-            aug = cv2.cvtColor(cv2.imread(aug_path), cv2.COLOR_BGR2GRAY)
+                    for tag in self.tags:
+                        for element in driver.find_elements_by_tag_name(tag):
+                            driver.execute_script(f"arguments[0].style.color = 'rgba(255,0,0,0.0)'", element)
 
-            pols = create_bbox(img, aug)
+                    driver.save_screenshot(aug_path)
 
-            bbox_dict = {}
-            for i, pol in enumerate(pols):
-                bbox_dict[f'box_{i}'] = pol.bounds
+                    img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+                    aug = cv2.cvtColor(cv2.imread(aug_path), cv2.COLOR_BGR2GRAY)
 
-            with open(annot_path, 'w') as f:
-                json.dump(bbox_dict, f)
-            
-        tmp_dir.cleanup()
+                    pols = create_bbox(img, aug, thresh, ksize)
+
+                    bbox_dict = {}
+                    for i, pol in enumerate(pols):
+                        bbox_dict[f'box_{i}'] = pol.bounds
+
+                    with open(annot_path, 'w') as f:
+                        json.dump(bbox_dict, f)
+                 
+                except (StaleElementReferenceException, JavascriptException) as e:
+                    print('Error in ',url)
+                    with contextlib.suppress(FileNotFoundError):
+                        os.remove(img_path)
+                        os.remove(annot_path)
+
+        finally:
+            driver.quit()
+            tmp_dir.cleanup()
         
     
     def add_links(self, links=[]):
