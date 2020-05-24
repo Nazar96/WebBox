@@ -106,9 +106,15 @@ class WebBoxGenerator():
 
                     pols = create_bbox(img, aug, thresh, ksize)
 
-                    bbox_dict = {}
+                    bbox_list = []
                     for i, pol in enumerate(pols):
-                        bbox_dict[f'box_{i}'] = pol.bounds
+                        bbox_list.append({'box': pol.bounds})
+                        
+                    bbox_dict = {
+                        'form': {
+                            'words' : bbox_list
+                        }
+                    }
 
                     with open(annot_path, 'w') as f:
                         json.dump(bbox_dict, f)
