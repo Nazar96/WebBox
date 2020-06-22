@@ -2,15 +2,19 @@ from webbox.webbox_generator import WebBoxGenerator
 import unittest
 import os
 import shutil
+from pathlib import Path
 
 
 class TestWebBox(unittest.TestCase):
     def setUp(self):
-        self.screen_path = './data/image'
-        self.markup_path = './data/annot'
+        self.screen_path = './data/image/'
+        self.markup_path = './data/annot/'
 
         shutil.rmtree(self.screen_path, ignore_errors=True)
         shutil.rmtree(self.markup_path, ignore_errors=True)
+
+        Path(self.screen_path).mkdir(parents=True, exist_ok=True)
+        Path(self.markup_path).mkdir(parents=True, exist_ok=True)
 
         self.wbg = WebBoxGenerator(
             screen_path=self.screen_path,
