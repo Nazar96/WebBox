@@ -1,5 +1,7 @@
 from setuptools import setup
 
+requirements = [package.strip() for package in open('requirements.txt', 'r').readlines()]
+
 setup(
    name='webbox',
    version='0.1.0',
@@ -7,10 +9,5 @@ setup(
    author_email='ntehta96@gmail.com',
    packages=['webbox'],
    url='https://github.com/Nazar96/WebBox',
-   install_requires=[
-       "selenium==3.141.0",
-       "Shapely==1.7",
-       "tqdm==4.46.1",
-       "opencv-python==4.2.0.34"
-   ],
+   install_requires=requirements,
 )
