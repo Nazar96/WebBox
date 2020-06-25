@@ -1,8 +1,10 @@
 from webbox.webbox_generator import WebBoxGenerator
 import unittest
 import os
+import sys
 import shutil
 from pathlib import Path
+import logging
 
 
 class TestWebBox(unittest.TestCase):
@@ -30,14 +32,21 @@ class TestWebBox(unittest.TestCase):
         shutil.rmtree(self.markup_path, ignore_errors=True)
 
     def test_heatmap_generator(self):
+        log = logging.getLogger('heatmap_generator')
+        log.setLevel(logging.INFO)
         self.wbg.generate(self.links, 'heatmap')
 
+        n_screens = len(os.listdir(self.screen_path))
+        n_annots = len(os.listdir(self.markup_path))
+
+        log.info(f'{n_screens} files in {self.screen_path}\n {n_annots} files in {self.markup_path}')
         self.assertEqual(
-            len(os.listdir(self.screen_path)),
-            len(os.listdir(self.markup_path)),
+            n_screens,
+            n_annots,
             "Different number of files in screen and markaup directories"
         )
 
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stdout)
     unittest.main(verbosity=2)

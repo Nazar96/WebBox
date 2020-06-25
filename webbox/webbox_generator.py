@@ -8,10 +8,13 @@ import numpy as np
 from tempfile import TemporaryDirectory
 import cv2
 from utils import func
+from webbox import webbox_logger
 
 
+# TODO: Add logging
+# TODO: exception handling
 class WebBoxGenerator:
-    def __init__(self, screen_path='./data/image/', sleep_time=0.5, markup_path='./data/annot/', headless=True):
+    def __init__(self, screen_path='./data/image/', markup_path='./data/annot/', sleep_time=0.5, headless=True):
         self.headless = headless
         self.screen_path = screen_path
         self.markup_path = markup_path if markup_path is None else markup_path
