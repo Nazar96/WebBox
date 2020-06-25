@@ -4,10 +4,8 @@ services: docker
 
 jobs:
   include:
-    - stage: build docker image
+    - stage: build docker image and test webbox
       script:
       - docker build -t webbox --quiet .
       - docker images
-    - stage: test
-      script: docker run --rm webbox python3 -m unittest tests/test.py
-    - script: docker run --rm webbox python3 -m unittest tests/test.py
+      - docker run --rm webbox python3 -m unittest tests/test.py
