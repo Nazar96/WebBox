@@ -1,3 +1,14 @@
-language: python
-script:
-  - python -m unittest tests/test.py
+dist: trusty
+
+jobs:
+  include:
+    - stage: build docker image
+      script:
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker build -t webbox .
+      - docker images
+      - docker tag webbox $DOCKER_USERNAME/webbox
+      - docker push $DOCKER_USERNAME/webbox
+    - stage: test
+      script: docker run --rm $DOCKER_USERNAME/webbox python3 -m unittest tests/test.py
+    - script: docker run --rm $DOCKER_USERNAME/webbox python3 -m unittest tests/test.py
