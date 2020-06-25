@@ -6,7 +6,6 @@ jobs:
   include:
     - stage: build docker image
       script:
-      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker build -t webbox --quiet .
       - docker images
     - stage: test
