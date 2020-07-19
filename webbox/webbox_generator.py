@@ -43,6 +43,11 @@ class WebBoxGenerator:
         return anchors
 
     def generate(self, url_list, method='heatmap', max_anchors=None):
+        """
+        :param url_list:
+        :param method: heatmap or bbox
+        :param max_anchors:
+        """
         options = Options()
         options.headless = self.headless
         driver = webdriver.Firefox(options=options)
@@ -78,7 +83,7 @@ class WebBoxGenerator:
                     # create markup
                     orig_img = cv2.cvtColor(cv2.imread(orig_path), cv2.COLOR_BGR2GRAY)
                     mod_img = cv2.cvtColor(cv2.imread(mod_path), cv2.COLOR_BGR2GRAY)
-                    self.__save_result(method, orig_img, mod_img, markup_path+str(anchor))
+                    self.__save_result(method, orig_img, mod_img, markup_path+'_'+str(anchor))
 
                 tmp_dir.cleanup()
 

@@ -45,6 +45,7 @@ def generate_wiki_links(n=10, start_page='Python', language='ru'):
     return result[:n]
 
 
+@delayed
 def get_sparkinterfax_url(name):
     url = 'https://www.spark-interfax.ru/search?Query=' + name
     content = BeautifulSoup(requests.get(url).content)
@@ -57,9 +58,6 @@ def get_sparkinterfax_url(name):
 
 
 def generate_sparkinterfax_links(companies):
-    result = {}
-    for company in companies:
-        url = get_sparkinterfax_url(company)
-        if url is not None:
-            result[company] = url
+    result = {company: get_sparkinterfax_url(company) for company in companies}
+    result = compute(result)[0]
     return result
