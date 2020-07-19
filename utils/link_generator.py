@@ -1,10 +1,13 @@
 import wikipediaapi
 import random
 from dask import delayed, compute
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 
 @delayed
-def get_url(wikipage):
+def get_wiki_url(wikipage):
     try:
         url = wikipage.fullurl
         return url
@@ -33,10 +36,30 @@ def generate_wiki_links(n=10, start_page='Python', language='ru'):
     result = []
     n_trials = len(new_pages) // n
     for i in range(n_trials):
-        dask_res = compute(*map(get_url, new_pages[n * i:n * (i + 1)]))
+        dask_res = compute(*map(get_wiki_url, new_pages[n * i:n * (i + 1)]))
         dask_res = list(filter(lambda url: url is not None, dask_res))
         result += dask_res
         if len(result) >= n:
             break
 
     return result[:n]
+
+
+def get_sparkinterfax_url(name):
+    url = 'https://www.spark-interfax.ru/search?Query=' + name
+    content = BeautifulSoup(requests.get(url).content)
+    try:
+        link = content.li.a['href']
+        link = urljoin('https://www.spark-interfax.ru/', link)
+        return link
+    except AttributeError:
+        pass
+
+
+def generate_sparkinterfax_links(companies):
+    result = {}
+    for company in companies:
+        url = get_sparkinterfax_url(company)
+        if url is not None:
+            result[company] = url
+    return result
