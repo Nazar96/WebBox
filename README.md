@@ -21,5 +21,10 @@ wbg = WebBoxGenerator(
             sleep_time=0.1,
         )
  links = ['https://ru.wikipedia.org/wiki/']
+ 
+ # Generate bounding boxes
+ wbg.generate(links, 'bbox')
+ 
+ # Generate heatmaps
  wbg.generate(links, 'heatmap')
  ```
